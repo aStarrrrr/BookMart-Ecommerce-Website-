@@ -1,0 +1,114 @@
+Update the exixting 4 books:
+
+
+UPDATE books
+SET 
+    isbn = '978-061120084',
+    title = 'To Kill a Mockingbird',
+    author = 'Harper Lee',
+    GenreID = 1,
+    description = 'A classic of modern American literature, ''To Kill a Mockingbird'' by Harper Lee, published in 1960, explores themes of racial injustice and childhood innocence in the American South. The story is narrated by Scout Finch, a young girl whose lawyer father...',
+    price = 299.00,
+    DiscountedPrice = NULL,
+    StockQuantity = 50,
+    MinStockLevel = 20,
+    PageCount = 336,
+    language = 'English',
+    PublishedDate = 1960,
+    publisher = 'J. B. Lippincott & Co.',
+    CoverImageURL = 'https://raw.githubusercontent.com/Roseantic-Gudino/Book-Images/refs/heads/main/Fiction/tokillamockingbird.jpg',
+    createdat = '2023-01-01 10:00:00.0000000',
+    updatedat = '2025-06-04 12:25:13.9589088',
+    IsActive = 1
+WHERE bookid = 1;
+ 
+UPDATE books
+SET 
+    isbn = '978-812981605',
+    title = 'The Power of Habit',
+    author = 'Charles Duhigg',
+    GenreID = 9,
+    description = 'In ''The Power of Habit: Why We Do What We Do in Life and Business,'' Charles Duhigg, a Pulitzer Prize-winning reporter, explores the science behind habit formation and reformation. Published in 2012, the book delves into how habits function at individual, o',
+    price = 400.00,
+    DiscountedPrice = 350.00,
+    StockQuantity = 75,
+    MinStockLevel = 20,
+    PageCount = 400,
+    language = 'English',
+    PublishedDate = 2012,
+    publisher = 'Random House',
+    CoverImageURL = 'https://raw.githubusercontent.com/Roseantic-Gudino/Book-Images/refs/heads/main/SelfHelp/thepowerofhabit.jpg',
+    createdat = '2023-01-02 11:30:00.0000000',
+    updatedat = '2025-06-04 12:26:09.6191237',
+    IsActive = 1
+WHERE bookid = 2;
+ 
+UPDATE books
+SET 
+    isbn = '978-817234456',
+    title = 'The Great Gatsby',
+    author = 'F. Scott Fitzgerald',
+    GenreID = 1,
+    description = 'A novel by F. Scott Fitzgerald, ''The Great Gatsby'' is a classic of modern American literature, published in 1925. It details the decadent Jazz Age through the eyes of Nick Carraway, who recounts the enigmatic millionaire Jay Gatsby''s opulent life and tragi',
+    price = 350.00,
+    DiscountedPrice = NULL,
+    StockQuantity = 60,
+    MinStockLevel = 20,
+    PageCount = 180,
+    language = 'English',
+    PublishedDate = 1925,
+    publisher = 'Charles Scribner''s Sons',
+    CoverImageURL = 'https://raw.githubusercontent.com/Roseantic-Gudino/Book-Images/refs/heads/main/Fiction/thegreatgatsby-fiction.jpg',
+    createdat = '2023-01-03 12:45:00.0000000',
+    updatedat = '2025-06-04 11:32:33.5823831',
+    IsActive = 1
+WHERE bookid = 3;
+ 
+UPDATE books
+SET 
+    isbn = '978-547928227',
+    title = 'The Hobbit',
+    author = 'J.R.R. Tolkien',
+    GenreID = 3,
+    description = 'J.R.R. Tolkien''s ''The Hobbit,'' published in 1937, is a fantastical journey following Bilbo Baggins, a hobbit who joins a quest with a group of dwarves to reclaim their treasure from the dragon Smaug. This beloved children''s fantasy novel introduces readers',
+    price = 450.00,
+    DiscountedPrice = NULL,
+    StockQuantity = 80,
+    MinStockLevel= 20,
+    PageCount = 310,
+    language = 'English',
+    PublishedDate = 1937,
+    publisher = 'George Allen & Unwin',
+    CoverImageURL = 'https://raw.githubusercontent.com/Roseantic-Gudino/Book-Images/refs/heads/main/Fantasy/thehobbit-fantasy.jpg',
+    createdat = '2023-01-04 13:15:00.0000000',
+    updatedat = '2025-06-04 12:08:25.8296314',
+    IsActive = 1
+WHERE bookid = 4;
+
+
+
+Update genres:
+
+
+
+----select * from Genres
+----UPDATE genres SET name = 'Fiction', description = NULL, iconclass = 'fas fa-scroll', colortheme = 'rgb(13, 202, 240)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 1;
+----UPDATE genres SET name = 'Science', description = NULL, iconclass = 'fas fa-flask', colortheme = 'rgb(255, 193, 7)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 2;
+----UPDATE genres SET name = 'Fantasy', description = NULL, iconclass = 'fas fa-hat-wizard', colortheme = 'rgb(253, 126, 20)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 3;
+----UPDATE genres SET name = 'Mystery', description = NULL, iconclass = 'fas fa-space-shuttle', colortheme = 'rgb(25, 135, 84)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 4;
+----UPDATE genres SET name = 'Thriller', description = NULL, iconclass = 'fas fa-compass', colortheme = 'rgb(255, 193, 7)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 5;
+----UPDATE genres SET name = 'Romance', description = NULL, iconclass = 'fas fa-heart', colortheme = 'rgb(220, 53, 69)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 6;
+----UPDATE genres SET name = 'Autobiography', description = NULL, iconclass = 'fas fa-microscope', colortheme = 'rgb(13, 202, 240)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 7;
+----UPDATE genres SET name = 'History', description = NULL, iconclass = 'fas fa-book', colortheme = 'rgb(102, 16, 242)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 8;
+----UPDATE genres SET name = 'Self-Help', description = NULL, iconclass = 'fas fa-scroll', colortheme = '#0d6efd', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 9;
+----UPDATE genres SET name = 'Cookbook', description = NULL, iconclass = 'fas fa-book-open', colortheme = 'rgb(102, 16, 242)', createdat = '0001-01-01 00:00:00.0000000' WHERE genreid = 10;
+ 
+----INSERT INTO Genres (Name, Description, IconClass, ColorTheme, CreatedAt)
+----VALUES ('Crime', NULL, 'fas fa-skull', '#fd7e14', '2025-06-04 10:33:46.9845750');
+----INSERT INTO Genres (Name, Description, IconClass, ColorTheme, CreatedAt)
+----VALUES ('Drama', NULL, 'fas fa-theater-masks', 'rgb(25, 135, 84)', '2025-06-04 10:56:13.8397144');
+----INSERT INTO Genres (Name, Description, IconClass, ColorTheme, CreatedAt)
+----VALUES ('Horror', NULL, 'fas fa-ghost', 'rgb(108, 117, 125)', '2025-06-04 10:59:20.2372960');
+
+
+
