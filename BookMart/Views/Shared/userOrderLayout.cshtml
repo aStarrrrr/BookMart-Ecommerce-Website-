@@ -1,0 +1,220 @@
+﻿@using BookMart.Data
+@inject ApplicationDbContext _context
+
+@{
+    int? userId = null;
+    bool isAdmin = false;
+    if (User.Identity.IsAuthenticated)
+    {
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdStr, out var id))
+        {
+            userId = id;
+            var user = _context.Users.FirstOrDefault(u => u.UserID == id);
+            if (user != null)
+            {
+                isAdmin = user.IsAdmin;
+            }
+        }
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - BookMart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/user.css" asp-append-version="true">
+    <style>
+        :root {
+            --color-accent: #007bff;
+            --color-warning: #ffc107;
+            --color-cta: #17a2b8;
+            --bg-alt: #f8f9fa;
+            --color-danger: #dc3545;
+            --navbar-height: 56px;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #e6f0f8;
+        }
+
+        .navbar {
+            height: var(--navbar-height);
+            background-color: #000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        main {
+            padding-top: var(--navbar-height);
+        }
+
+        /* --- Your provided styles below --- */
+        .order-card {
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+            .order-card:hover {
+                transform: translateY(-2px);
+            }
+
+        .status-badge {
+            border-radius: 50px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            color: white; /* Ensure text is white for dark backgrounds */
+        }
+
+            .status-badge.delivered {
+                background-color: var(--color-accent); /* Using CSS variable */
+            }
+
+            .status-badge.processing {
+                background-color: var(--color-warning); /* Using CSS variable */
+            }
+
+            .status-badge.shipped {
+                background-color: var(--color-cta); /* Using CSS variable */
+            }
+
+            .status-badge.pending { /* Added for pending status */
+                background-color: #ffc107; /* Bootstrap yellow */
+                color: #343a40; /* Dark text for light background */
+            }
+
+            .status-badge.cancelled { /* Added for cancelled status */
+                background-color: var(--color-danger); /* Using CSS variable */
+            }
+
+        .tracking-info {
+            position: relative;
+            padding-left: 30px;
+        }
+
+            .tracking-info::before {
+                content: "";
+                position: absolute;
+                left: 15px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: var(--bg-alt); /* Using CSS variable */
+            }
+
+        .tracking-step {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+            .tracking-step::before {
+                content: "";
+                position: absolute;
+                left: 10px; /* Adjusted to align with vertical line */
+                top: 0;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: var(--color-accent); /* Using CSS variable */
+                border: 2px solid white;
+            }
+
+        .order-filter {
+            background-color: var(--bg-alt); /* Using CSS variable */
+            border-radius: 8px;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="@Url.Action("UserHome", "User")">
+                <img src="https://raw.githubusercontent.com/Sumeet-162/eCommerce.Net/refs/heads/main/spell-book%20(1).png" alt="BookMart Logo" style="width: 35px; margin-right: 10px;">
+                <span>BookMart</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a href="@Url.Action("UserCart", "User")" class="nav-link cart-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="ms-1">Cart</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("UserOrder", "User")" class="nav-link active">
+                            <i class="fas fa-box me-1"></i>
+                            Orders
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/User/UserProfile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/Account/Logout">Logout</a></li>
+                            @if (isAdmin)
+                            {
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" href="/Admin/Dashboard">Switch to Admin</a></li>
+                            }
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="text-white">About BookMart</h5>
+                    <p class="text-white-50">Your one-stop destination for all literary needs.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-white">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white-50">About Us</a></li>
+                        <li><a href="#" class="text-white-50">Contact</a></li>
+                        <li><a href="#" class="text-white-50">FAQs</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-white">Connect With Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="text-center text-white-50">
+                <p class="mb-0">&copy; @DateTime.Now.Year - BookMart. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

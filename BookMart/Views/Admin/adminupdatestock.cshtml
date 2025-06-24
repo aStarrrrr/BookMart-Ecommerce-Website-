@@ -1,0 +1,96 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    ViewData["Title"] = "Update Stock";
+    Layout = "adminLayout";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Update Stock</span>
+            <a href="@Url.Action("AdminStock", "Admin")" class="btn btn-outline">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+        <div class="card-body">
+            <form id="updateStockForm">
+                <div class="row g-3 p-3">
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header">Book Cover</div>
+                            <div class="card-body text-center">
+                                <img src="~/images/1984.jpg" alt="Book" style="width: 80px; height: 120px; object-fit: cover;" class="rounded shadow-sm mb-2">
+                                <div class="fw-semibold fs-5 mb-1">1984</div>
+                                <div class="text-muted mb-0">by George Orwell</div>
+                                <div class="small text-muted mt-1">Fiction</div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header">Stock Stats</div>
+                            <div class="card-body">
+                                <div class="mb-2"><span class="small text-muted">Current Stock:</span> <span class="fw-bold">12</span></div>
+                                <div class="mb-2"><span class="small text-muted">Minimum Stock:</span> <span class="fw-bold">20</span></div>
+                                <div><span class="small text-muted">On Order:</span> <span class="fw-bold">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card mb-3">
+                            <div class="card-header">Update Stock</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="operation" class="form-label">Operation</label>
+                                    <select class="form-select" id="operation" required>
+                                        <option value="">Select operation</option>
+                                        <option value="add">Add Stock</option>
+                                        <option value="remove">Remove Stock</option>
+                                        <option value="adjust">Adjust Stock Level</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" min="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="reason" class="form-label">Reason</label>
+                                    <select class="form-select" id="reason" required>
+                                        <option value="">Select reason</option>
+                                        <option value="restock">New Stock Arrival</option>
+                                        <option value="damaged">Damaged Items</option>
+                                        <option value="return">Customer Return</option>
+                                        <option value="correction">Stock Correction</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="notes" rows="3" placeholder="Add any additional notes here..."></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-outline" onclick="window.location.href='@Url.Action("AdminStock", "Admin")'">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-outline">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('updateStockForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Stock update form submitted (simulated)!');
+        window.location.href = '@Url.Action("adminstock", "Admin")';
+    });
+</script>

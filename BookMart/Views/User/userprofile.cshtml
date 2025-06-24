@@ -1,0 +1,526 @@
+﻿@model BookMart.Models.User
+
+@{
+    ViewData["Title"] = "User Profile";
+    Layout = "userCommonLayout"; // Ensure this layout is correctly configured
+}
+
+@* IMPORTANT: These CSS and JS links are handled by userCommonLayout.cshtml. Do NOT re-include them here. *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="~/css/user.css" rel="stylesheet" />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["InfoMessage"] != null && !User.Identity.IsAuthenticated)
+{
+    <div class="alert alert-info alert-dismissible fade show m-3" role="alert">
+        @TempData["InfoMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container mt-5 pt-5">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle mb-3">
+                            @{
+                                // Safely get initials, handling potential nulls or empty strings
+                                char firstInitial = !string.IsNullOrEmpty(Model.FirstName) ? Model.FirstName[0] : 'U';
+                                char lastInitial = !string.IsNullOrEmpty(Model.LastName) ? Model.LastName[0] : 'N';
+                            }
+                            <span class="avatar-initials">@firstInitial@lastInitial</span>
+                        </div>
+                        <h5 class="text-dark mb-1">@Model.FirstName @Model.LastName</h5>
+                        <p class="text-secondary small mb-0">Member since @Model.CreatedAt.ToString("MMMM yyyy")</p>
+                    </div>
+                    <nav class="nav flex-column nav-pills">
+                        <a class="nav-link active d-flex align-items-center" data-bs-toggle="pill" href="#profile">
+                            <i class="fas fa-user me-3"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a class="nav-link d-flex align-items-center" href="@Url.Action("UserOrder", "User")">
+                            <i class="fas fa-box me-3"></i>
+                            <span>Orders</span>
+                        </a>
+                        <a class="nav-link d-flex align-items-center" data-bs-toggle="pill" href="#settings">
+                            <i class="fas fa-cog me-3"></i>
+                            <span>Settings</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Profile Section -->
+                <div class="tab-pane fade show active" id="profile">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="text-dark card-title mb-0">Personal Information</h3>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                    <i class="fas fa-edit me-2"></i>Edit Profile
+                                </button>
+                            </div>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="info-card p-3 rounded-3">
+                                        <label class="text-secondary small mb-1">Username</label>
+                                        <p class="mb-0 text-dark fw-medium" id="displayUsername">@Model.Username</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-card p-3 rounded-3">
+                                        <label class="text-secondary small mb-1">Full Name</label>
+                                        <p class="mb-0 text-dark fw-medium" id="displayName">@Model.FirstName @Model.LastName</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-card p-3 rounded-3">
+                                        <label class="form-label" for="displayEmail">Email</label>
+                                        <p class="mb-0 text-dark fw-medium" id="displayEmail">@Model.Email</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-card p-3 rounded-3">
+                                        <label class="form-label" for="displayPhone">Phone</label>
+                                        <p class="mb-0 text-dark fw-medium" id="displayPhone">@Model.Phone</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Section (Link to dedicated page) -->
+                <div class="tab-pane fade" id="orders">
+                    <div class="card shadow-sm border-0 p-4 text-center">
+                        <h3 class="card-title mb-3">Your Order History</h3>
+                        <p class="text-muted mb-4">View and track all your past and current orders on a dedicated page.</p>
+                        <a href="@Url.Action("UserOrder", "User")" class="btn btn-primary">
+                            <i class="fas fa-box-open me-2"></i>Go to My Orders
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="tab-pane fade" id="settings">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h3 class="card-title">Account Settings</h3>
+
+                            <!-- Email Notifications -->
+                            <div class="card mb-4">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title">Email Notifications</h5>
+                                    <div class="form-group">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="orderUpdates" checked>
+                                            <label class="form-check-label" for="orderUpdates">
+                                                Order updates and tracking information
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="promotions" checked>
+                                            <label class="form-check-label" for="promotions">
+                                                Promotions and special offers
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="newsletter">
+                                            <label class="form-check-label" for="newsletter">
+                                                Weekly newsletter
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Privacy Settings -->
+                            <div class="card mb-4">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title">Privacy Settings</h5>
+                                    <div class="form-group">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="profileVisibility" checked>
+                                            <label class="form-check-label" for="profileVisibility">
+                                                Make my profile visible to other users
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="activityTracking" checked>
+                                            <label class="form-check-label" for="activityTracking">
+                                                Allow activity tracking for personalized recommendations
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Password Change -->
+                            <div class="card mb-4">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title">Change Password</h5>
+                                    <form id="changePasswordForm" asp-controller="User" asp-action="ChangePassword" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <div class="mb-3">
+                                            <label class="form-label">Current Password</label>
+                                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">New Password</label>
+                                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Confirm New Password</label>
+                                            <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="changePasswordBtn">Change Password</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Account Actions -->
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title">Account Actions</h5>
+                                    <p class="text-muted mb-3">Here you can logout or delete your account</p>
+                                    <div class="d-flex gap-2">
+                                        <form asp-controller="Account" asp-action="Logout" method="post" id="profileLogoutForm">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-primary">
+                                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                            </button>
+                                        </form>
+                                        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountConfirmModal">
+                                            <i class="fas fa-trash-alt me-2"></i>Delete Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editProfileForm" asp-controller="User" asp-action="UpdateProfile" method="post">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="UserID" />
+                    <div class="mb-3">
+                        <label class="form-label" for="editFirstName">First Name</label>
+                        <input type="text" class="form-control" id="editFirstName" name="FirstName" value="@Model.FirstName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editLastName">Last Name</label>
+                        <input type="text" class="form-control" id="editLastName" name="LastName" value="@Model.LastName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editEmail">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="Email" value="@Model.Email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editPhone">Phone</label>
+                        <input type="tel" class="form-control" id="editPhone" name="Phone" value="@Model.Phone">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal fade" id="deleteAccountConfirmModal" tabindex="-1" aria-labelledby="deleteAccountConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger" id="deleteAccountConfirmModalLabel">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteAccountForm" asp-controller="User" asp-action="DeleteAccount" method="post">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <p class="text-danger">This action is irreversible. All your data, including orders and associated addresses, will be permanently deleted.</p>
+                    <p class="fw-bold">To confirm, please type "<span class="text-danger">delete my account</span>" in the box below:</p>
+                    <input type="text" class="form-control" id="deleteAccountConfirmationText" name="confirmationText" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete My Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* jQuery and Bootstrap JS are expected to be loaded by userCommonLayout.cshtml.
+       If they are NOT, uncomment the lines below and ensure they are present here. *@
+    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> *@
+    @* <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> *@
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Function to show Toastr-like messages using Bootstrap alerts
+            function showMessage(type, message) {
+                const alertContainer = document.querySelector('.container.mt-5.pt-5');
+                if (alertContainer) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                    alertDiv.setAttribute('role', 'alert');
+                    alertDiv.innerHTML = `
+                        <span>${message}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    alertContainer.prepend(alertDiv);
+                    setTimeout(() => alertDiv.remove(), 5000); // Remove after 5 seconds
+                }
+            }
+
+            // Check for TempData messages on page load (from redirects)
+            const successMessage = '@TempData["SuccessMessage"]';
+            const errorMessage = '@TempData["ErrorMessage"]';
+            const infoMessage = '@TempData["InfoMessage"]';
+
+            if (successMessage && successMessage.trim() !== '') {
+                showMessage('success', successMessage);
+            }
+            if (errorMessage && errorMessage.trim() !== '') {
+                showMessage('danger', errorMessage);
+            }
+            if (infoMessage && infoMessage.trim() !== '') {
+                showMessage('info', infoMessage);
+            }
+
+            // --- Edit Profile Modal Logic (AJAX Submission) ---
+            $('#editProfileForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                const form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(), // Serialize form data including anti-forgery token
+                    success: function (response) {
+                        if (response.success) {
+                            // Hide the modal first
+                            $('#editProfileModal').modal('hide');
+
+                            // Attach a one-time listener for when the modal is fully hidden
+                            // This ensures the backdrop removal happens *after* the transition
+                            $('#editProfileModal').one('hidden.bs.modal', function () { // Use .one() for single execution
+                                // Update displayed profile info immediately after modal is gone
+                                const newFirstName = $('#editProfileForm input[name="FirstName"]').val();
+                                const newLastName = $('#editProfileForm input[name="LastName"]').val();
+                                const newEmail = $('#editProfileForm input[name="Email"]').val();
+                                const newPhone = $('#editProfileForm input[name="Phone"]').val();
+
+                                document.getElementById('displayName').innerText = newFirstName + ' ' + newLastName;
+                                document.getElementById('displayEmail').innerText = newEmail;
+                                document.getElementById('displayPhone').innerText = newPhone;
+                                // Update initials
+                                document.querySelector('.avatar-initials').innerText = (newFirstName ? newFirstName[0] : 'U') + (newLastName ? newLastName[0] : 'N');
+
+                                showMessage('success', response.message);
+                            });
+
+                        } else {
+                            showMessage('danger', response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showMessage('danger', 'Error updating profile. Please try again.');
+                        console.error("AJAX Error: ", status, error, xhr.responseText);
+                    }
+                });
+            });
+
+            // --- Change Password Form Logic (AJAX Submission) ---
+            $('#changePasswordForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            showMessage('success', response.message);
+                            form[0].reset(); // Clear form fields on success
+                        } else {
+                            showMessage('danger', response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showMessage('danger', 'Error changing password. Please try again.');
+                        console.error("AJAX Error: ", status, error, xhr.responseText);
+                    }
+                });
+            });
+
+            // --- Delete Account Form Logic (AJAX Submission + Client-Side Redirect) ---
+            $('#deleteAccountForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const form = $(this);
+                const confirmationText = $('#deleteAccountConfirmationText').val();
+
+                if (confirmationText.toLowerCase() !== "delete my account") {
+                    showMessage('danger', "Please type 'delete my account' to confirm account deletion.");
+                    document.getElementById('deleteAccountConfirmationText').value = ''; // Clear confirmation text
+                    return; // Stop submission
+                }
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Hide the modal immediately
+                            $('#deleteAccountConfirmModal').modal('hide');
+
+                            // Wait for modal to be hidden, then perform redirect
+                            $('#deleteAccountConfirmModal').one('hidden.bs.modal', function () {
+                                showMessage('success', response.message); // Show message just before redirect
+                                // Perform client-side redirect after the modal is fully closed
+                                window.location.href = '@Url.Action("Login", "Account")'; // Redirect to login page
+                            });
+                        } else {
+                            showMessage('danger', response.message);
+                            document.getElementById('deleteAccountConfirmationText').value = ''; // Clear confirmation text
+                            // Modal stays open if validation/server error
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showMessage('danger', 'An unexpected error occurred during account deletion. Please try again.');
+                        console.error("AJAX Error: ", status, error, xhr.responseText);
+                        document.getElementById('deleteAccountConfirmationText').value = ''; // Clear confirmation text on error
+                    }
+                });
+            });
+
+            // Auto-dismiss alerts after 3 seconds
+            setTimeout(function() {
+                document.querySelectorAll('.alert').forEach(function(alert) {
+                    if (alert.classList.contains('show')) {
+                        var bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                });
+            }, 3000);
+
+            // Handle tab selection if user navigates via URL hash (e.g., #settings)
+            const hash = window.location.hash;
+            if (hash) {
+                const triggerEl = document.querySelector(`nav.nav-pills a[href="${hash}"]`);
+                if (triggerEl) {
+                    const tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }
+            }
+        });
+    </script>
+    <style>
+        .card, .info-card {
+            border-radius: 1.25rem;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s cubic-bezier(.4,0,.2,1), transform 0.2s cubic-bezier(.4,0,.2,1);
+            background: #fff;
+            border: 1px solid #e5e5e5;
+        }
+        .card:hover, .info-card:hover {
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.16);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .btn, .btn-primary, .btn-outline-primary {
+            border-radius: 1.5rem !important;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+        }
+        .btn-primary {
+            background: #111;
+            color: #fff;
+            border: none;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background: #222;
+            color: #fff;
+        }
+        .btn-outline-primary {
+            color: #111;
+            border: 2px solid #111;
+            background: #fff;
+        }
+        .btn-outline-primary:hover, .btn-outline-primary:focus {
+            background: #111;
+            color: #fff;
+        }
+        .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+            background-color: #111;
+            color: #fff;
+        }
+        .nav-pills .nav-link {
+            color: #111;
+            background: #f8f9fa;
+            border-radius: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+        .avatar-circle {
+            width: 64px;
+            height: 64px;
+            background: #f2f2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #111;
+            margin: 0 auto;
+        }
+        .dropdown-menu {
+            border-radius: 1rem;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+        }
+    </style>
+}

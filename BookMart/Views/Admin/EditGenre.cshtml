@@ -1,0 +1,121 @@
+﻿@model BookMart.Models.Genre
+@{
+    ViewData["Title"] = "Update Genre";
+    Layout = "adminLayout";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Update Genre</span>
+            <a asp-action="Genres" class="btn btn-outline">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            <form asp-controller="Admin" asp-action="EditGenre" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="GenreID" />
+                <input type="hidden" asp-for="CreatedAt" />
+                <div class="row g-3 p-3">
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header">Genre Icon</div>
+                            <div class="card-body">
+                                <div class="icon-grid d-flex flex-wrap gap-2" id="iconGrid">
+                                    @{
+                                        var icons = new List<string>
+                                    {
+                                    "fas fa-book", "fas fa-graduation-cap", "fas fa-theater-masks", "fas fa-microscope",
+                                    "fas fa-heart", "fas fa-ghost", "fas fa-hat-wizard", "fas fa-robot",
+                                    "fas fa-book-open", "fas fa-rocket", "fas fa-dragon", "fas fa-space-shuttle",
+                                    "fas fa-skull", "fas fa-compass", "fas fa-scroll", "fas fa-flask"
+                                    };
+                                    }
+                                    @foreach (var icon in icons)
+                                    {
+                                        <div class="icon-option border rounded p-2 d-flex align-items-center justify-content-center @(Model.IconClass == icon ? "selected bg-black text-white" : "")" data-icon="@icon" style="width: 38px; height: 38px; cursor: pointer;">
+                                            <i class="@icon"></i>
+                                        </div>
+                                    }
+                                    <input type="hidden" asp-for="IconClass" id="selectedIconClass" />
+                                    <span asp-validation-for="IconClass" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card mb-3">
+                            <div class="card-header">Basic Information</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">Genre Name</label>
+                                    <input type="text" asp-for="Name" class="form-control" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label">Description</label>
+                                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a asp-action="Genres" class="btn btn-outline">Cancel</a>
+                            <button type="submit" class="btn btn-outline">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script>
+    // Handle icon selection
+    document.querySelectorAll('.icon-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const currentlySelectedIcon = document.querySelector('.icon-option.selected');
+            if (currentlySelectedIcon) {
+                currentlySelectedIcon.classList.remove('selected', 'bg-black', 'text-white');
+            }
+            this.classList.add('selected', 'bg-black', 'text-white');
+            document.getElementById('selectedIconClass').value = this.dataset.icon;
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialIcon = "@Model.IconClass";
+        if (initialIcon) {
+            const iconOption = document.querySelector(`.icon-option[data-icon='${initialIcon}']`);
+            if (iconOption) {
+                iconOption.classList.add('selected', 'bg-black', 'text-white');
+                document.getElementById('selectedIconClass').value = initialIcon;
+            }
+        } else {
+            const firstIconOption = document.querySelector('.icon-option');
+            if (firstIconOption) {
+                firstIconOption.classList.add('selected', 'bg-black', 'text-white');
+                document.getElementById('selectedIconClass').value = firstIconOption.dataset.icon;
+            }
+        }
+    });
+</script>

@@ -1,0 +1,230 @@
+﻿@model BookMart.Models.Book
+@{
+    ViewData["Title"] = "Edit Book";
+    Layout = "adminLayout";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>Edit Book</span>
+                <a asp-action="Books" class="btn btn-outline">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+
+        @if (Model == null)
+        {
+            <div class="alert alert-danger m-3">
+                Error: Book data not found. Please return to the <a asp-action="Books">book list</a>.
+            </div>
+            return;
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <form asp-action="EditBook" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="BookID" />
+            <input type="hidden" asp-for="CreatedAt" />
+
+            <div class="row g-3 p-3">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">Book Cover</div>
+                        <div class="card-body">
+                            <div class="current-image mb-3">
+                                @if (!string.IsNullOrEmpty(Model.CoverImageURL))
+                                {
+                                    <img src="@Model.CoverImageURL" alt="Current book cover"
+                                         class="img-fluid rounded shadow-sm" style="max-width: 120px; max-height: 160px;">
+                                }
+                                else
+                                {
+                                    <img src="/images/default-book.jpg" alt="Default book cover"
+                                         class="img-fluid rounded shadow-sm" style="max-width: 120px; max-height: 160px;">
+                                }
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="CoverImageURL" class="form-label">Cover Image URL</label>
+                                <input asp-for="CoverImageURL" class="form-control" id="imageUrl" />
+                                <span asp-validation-for="CoverImageURL" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card mb-3">
+                        <div class="card-header">Basic Information</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Title</label>
+                                <input asp-for="Title" class="form-control" required />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Author" class="form-label">Author</label>
+                                        <input asp-for="Author" class="form-control" required />
+                                        <span asp-validation-for="Author" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="GenreID" class="form-label">Genre</label>
+                                        <select asp-for="GenreID" class="form-control" asp-items="ViewBag.Genres" required>
+                                            <option value="">Select Genre</option>
+                                        </select>
+                                        <span asp-validation-for="GenreID" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Price" class="form-label">Price (₹)</label>
+                                        <input asp-for="Price" class="form-control" type="number" step="0.01" required />
+                                        <span asp-validation-for="Price" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="StockQuantity" class="form-label">Stock Quantity</label>
+                                        <input asp-for="StockQuantity" class="form-control" type="number" required />
+                                        <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="3" required></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">Additional Details</div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="ISBN" class="form-label">ISBN</label>
+                                        <input asp-for="ISBN" class="form-control" />
+                                        <span asp-validation-for="ISBN" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Publisher" class="form-label">Publisher</label>
+                                        <input asp-for="Publisher" class="form-control" />
+                                        <span asp-validation-for="Publisher" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="PublishedDate" class="form-label">Publication Year</label>
+                                        <input asp-for="PublishedDate" class="form-control" type="number"
+                                               min="1800" max="@DateTime.Now.Year" />
+                                        <span asp-validation-for="PublishedDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Language" class="form-label">Language</label>
+                                        <input asp-for="Language" class="form-control" />
+                                        <span asp-validation-for="Language" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="PageCount" class="form-label">Page Count</label>
+                                        <input asp-for="PageCount" class="form-control" type="number" min="1" />
+                                        <span asp-validation-for="PageCount" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="MinStockLevel" class="form-label">Minimum Stock Level</label>
+                                        <input asp-for="MinStockLevel" class="form-control" type="number" min="0" />
+                                        <span asp-validation-for="MinStockLevel" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="DiscountedPrice" class="form-label">Discounted Price (₹)</label>
+                                        <input asp-for="DiscountedPrice" class="form-control" type="number" step="0.01" />
+                                        <span asp-validation-for="DiscountedPrice" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check mt-4">
+                                            <input asp-for="IsActive" class="form-check-input" />
+                                            <label asp-for="IsActive" class="form-check-label">Active</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Books" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-outline">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script>
+    // Image preview functionality
+    document.getElementById('imageUrl').addEventListener('input', function() {
+        const preview = document.querySelector('.current-image img');
+        const url = this.value.trim();
+
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+            preview.src = url;
+            preview.onerror = function() {
+                preview.src = '/images/default-book.jpg';
+            };
+        } else {
+            preview.src = '/images/default-book.jpg';
+        }
+    });
+</script>

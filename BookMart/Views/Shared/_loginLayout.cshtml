@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - BookMart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Goudy+Bookletter+1911&family=Libre+Baskerville&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/user.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #111;
+            --primary-light: #444;
+            --primary-dark: #000;
+            --secondary-color: #666;
+            --bg-gradient: linear-gradient(135deg, #fff 0%, #f5f5f7 100%);
+        }
+
+        .libre-baskerville-regular {
+            font-family: "Libre Baskerville", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .goudy-bookletter-1911-regular {
+            font-family: "Goudy Bookletter 1911", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .gentium-book-plus-regular {
+            font-family: "Gentium Book Plus", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .gentium-book-plus-bold {
+            font-family: "Gentium Book Plus", serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        .gentium-book-plus-regular-italic {
+            font-family: "Gentium Book Plus", serif;
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .gentium-book-plus-bold-italic {
+            font-family: "Gentium Book Plus", serif;
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+            margin: 1rem;
+        }
+
+        .register-card {
+            max-width: 1000px;
+            width: 95%;
+        }
+
+        .brand-section {
+            background: linear-gradient(135deg, #111 0%, #444 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            align-items: center;
+            text-align: center;
+        }
+
+        .brand-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80') center/cover no-repeat;
+            opacity: 0.18;
+            z-index: 0;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .brand-text {
+            font-size: 1.1rem;
+            opacity: 0.92;
+            font-style: italic;
+        }
+
+        .form-section {
+            padding: 2rem;
+        }
+
+        .form-content {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .auth-title {
+            color: #111;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--secondary-color);
+            font-size: 1rem;
+        }
+
+        .compact-form .form-label {
+            color: #222;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .compact-form .form-control {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            background: #fff;
+            color: #111;
+        }
+
+        .compact-form .form-control:focus {
+            border-color: #111;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+        }
+
+        .compact-form .form-control.is-invalid {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 2px rgba(220,38,38,0.08);
+        }
+
+        .compact-form .field-validation-error {
+            font-size: 0.85rem;
+            color: #dc2626;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .btn-primary {
+            background-color: #111;
+            color: #fff;
+            border: none;
+            padding: 0.625rem 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #222;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .form-footer {
+            font-size: 0.875rem;
+        }
+
+        .form-footer a {
+            color: #111;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-footer a:hover {
+            color: #222;
+            text-decoration: underline;
+        }
+
+        .validation-summary-errors {
+            background: #fee2e2;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #dc2626;
+        }
+
+        .validation-summary-errors ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+ 
+    </style>
+</head>
+<body>
+    @RenderBody()
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

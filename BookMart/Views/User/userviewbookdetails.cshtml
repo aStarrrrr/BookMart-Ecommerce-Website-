@@ -1,0 +1,316 @@
+﻿@model BookMart.Models.Book
+
+@{
+    ViewData["Title"] = "Book Details";
+    Layout = "userCommonLayout";
+    var similarBooks = ViewData["SimilarBooks"] as List<Book>;
+}
+
+<link href="~/css/user.css" rel="stylesheet" />
+
+<style>
+/* Add smooth transitions and iOS-inspired effects */
+.card, .book-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+    transition: box-shadow 0.3s cubic-bezier(.4,0,.2,1), transform 0.2s cubic-bezier(.4,0,.2,1);
+    background: #fff;
+}
+.card:hover, .book-card:hover {
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.16);
+    transform: translateY(-2px) scale(1.02);
+}
+.btn, .btn-primary, .btn-outline-primary {
+    border-radius: 1.5rem !important;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+}
+.btn-primary {
+    background: #111;
+    color: #fff;
+    border: none;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background: #222;
+    color: #fff;
+}
+.btn-outline-primary {
+    color: #111;
+    border: 2px solid #111;
+    background: #fff;
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+    background: #111;
+    color: #fff;
+}
+.carousel-inner img {
+    border-radius: 1.25rem;
+    transition: box-shadow 0.3s;
+}
+.nav-tabs .nav-link {
+    border-radius: 1.5rem 1.5rem 0 0;
+    color: #111;
+    font-weight: 500;
+    background: #f8f9fa;
+    transition: background 0.2s, color 0.2s;
+}
+.nav-tabs .nav-link.active {
+    background: #111;
+    color: #fff;
+}
+.tab-content {
+    border-radius: 0 0 1.25rem 1.25rem;
+    background: #fff;
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.04);
+    transition: box-shadow 0.3s;
+}
+</style>
+
+<div class="container mt-5 pt-5">
+    <!-- Back Button -->
+    <a href="@Url.Action("UserHome", "User")" class="btn btn-outline-primary mb-3">
+        <i class="fas fa-arrow-left me-2"></i>Back to home
+    </a>
+
+    @if (Model != null)
+    {
+        <div class="row g-4">
+            <!-- Book Images Column -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div id="bookImages" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <img src="@Model.CoverImageURL" class="d-block w-100" alt="@Model.Title"
+                                     onerror="this.onerror=null; this.src='/images/default-book.jpg';">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book Details Column -->
+            <div class="col-md-8">
+                <h2 class="merriweather-heading mb-3">@Model.Title</h2>
+                <h5 class="libre-baskerville-regular text-muted mb-4">by @Model.Author</h5>
+                
+                <!-- Price Section -->
+                <div class="mb-4">
+                    @if (Model.DiscountedPrice.HasValue)
+                    {
+                        var discountPercentage = (int)(((Model.Price - Model.DiscountedPrice.Value) / Model.Price) * 100);
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="h3 text-primary mb-0 gentium-book-plus-bold">₹@Model.DiscountedPrice.Value.ToString("F2")</span>
+                            <span class="text-decoration-line-through text-muted">₹@Model.Price.ToString("F2")</span>
+                            <span class="badge bg-danger">@discountPercentage% OFF</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="h3 text-primary gentium-book-plus-bold">₹@Model.Price.ToString("F2")</span>
+                    }
+                </div>
+
+                <!-- Book Details Grid -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">ISBN</small>
+                                <span>@Model.ISBN</span>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Genre</small>
+                                <span>@Model.Genre?.Name</span>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Pages</small>
+                                <span>@Model.PageCount</span>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <small class="text-muted d-block">Language</small>
+                                <span>@Model.Language</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <div class="d-grid mb-4">
+                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="addToCart(event, @Model.BookID, '@Model.Title')">
+                        <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                    </button>
+                </div>
+
+                <!-- Login Modal (copied from userhome.cshtml for consistency) -->
+                <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="loginModalLabel">
+                                    <i class="fas fa-lock me-2"></i>Login Required
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="modal-icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <h4 class="mb-3">Add to Cart</h4>
+                                <p>Please login or create an account to add items to your cart and enjoy a personalized shopping experience.</p>
+                                <div class="benefits mb-4">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Track your orders</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Save your favorite books</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Get exclusive offers</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                                <a href="@Url.Action("Register", "Account")" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Book Details Tabs -->
+                <ul class="nav nav-tabs" id="bookDetailTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">
+                            Description
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#authorInfo">
+                            Author Info
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content p-4 border border-top-0">
+                    <div class="tab-pane fade show active" id="description">
+                        <p class="gentium-book-plus-regular">@Model.Description</p>
+                    </div>
+                    <div class="tab-pane fade" id="authorInfo">
+                        <div class="d-flex align-items-center mb-3">
+                            <div>
+                                <h4 class="goudy-bookletter-1911-regular">@Model.Author</h4>
+                                <p class="text-muted mb-0">Author of @Model.Title</p>
+                            </div>
+                        </div>
+                        <p class="gentium-book-plus-regular">Books by this author in the same genre.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Similar Books Section -->
+        @if (similarBooks != null && similarBooks.Any())
+        {
+            <section class="my-5">
+                <h3 class="libre-baskerville-regular mb-4">Similar Books You Might Like</h3>
+                <div class="row g-4">
+                    @foreach (var book in similarBooks)
+                    {
+                        <div class="col-6 col-md-3">
+                            <div class="book-card card h-100 shadow-sm hover-effect">
+                                <div class="position-relative book-image-container">
+                                    <img src="@book.CoverImageURL" class="card-img-top" alt="@book.Title"
+                                         onerror="this.onerror=null; this.src='/images/default-book.jpg';">
+                                    @if (book.DiscountedPrice.HasValue)
+                                    {
+                                        var discountPercentage = (int)(((book.Price - book.DiscountedPrice.Value) / book.Price) * 100);
+                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">@discountPercentage% OFF</span>
+                                    }
+                                </div>
+                                <div class="card-body d-flex flex-column p-3">
+                                    <h6 class="card-title gentium-book-plus-bold text-dark mb-1 text-truncate">@book.Title</h6>
+                                    <p class="card-text text-muted small mb-2 gentium-book-plus-regular">@book.Author</p>
+                                    <div class="mt-auto">
+                                        <div class="d-flex align-items-center mb-2">
+                                            @if (book.DiscountedPrice.HasValue)
+                                            {
+                                                <span class="text-decoration-line-through text-muted me-2 small">₹@book.Price.ToString("F2")</span>
+                                                <span class="text-primary fw-bold">₹@book.DiscountedPrice.Value.ToString("F2")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-primary fw-bold">₹@book.Price.ToString("F2")</span>
+                                            }
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="@Url.Action("UserViewBookDetails", "User", new { id = book.BookID })" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                                View Details
+                                            </a>
+                                            <button onclick="addToCart(@book.BookID, '@book.Title')" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <p class="lead gentium-book-plus-regular">Book not found.</p>
+            <p class="gentium-book-plus-regular">The book you are looking for might not exist or is currently unavailable.</p>
+            <a href="@Url.Action("UserHome", "User")" class="btn btn-primary mt-3">Return to Home</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function addToCart(event, bookId, title) {
+            if (event) {
+                event.preventDefault();
+            }
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <text>
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+                return;
+                </text>
+            }
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            $.ajax({
+                url: '@Url.Action("AddToCart", "User")',
+                type: 'POST',
+                data: { bookId: bookId },
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message || title + ' added to cart successfully!');
+                    } else {
+                        alert(response.message || 'Failed to add book to cart');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while adding the book to cart');
+                }
+            });
+        }
+    </script>
+}

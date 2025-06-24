@@ -1,0 +1,453 @@
+﻿@model List<BookMart.Models.Order>
+
+@{
+    ViewData["Title"] = "My Orders";
+    Layout = "userCommonLayout";
+}
+
+<link href="~/css/user.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<div class="container mt-5 pt-5 cart-page">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">My Orders</h4>
+        <a href="@Url.Action("UserHome", "User")" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Filter Section -->
+        <div class="col-lg-3">
+            <div class="filter-card card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Filter Orders</h5>
+                    <div class="mb-4">
+                        <label class="form-label text-muted" for="statusFilter">Order Status</label>
+                        <select class="form-select form-select-sm" id="statusFilter">
+                            <option value="">All Orders</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted" for="timePeriodFilter">Time Period</label>
+                        <select class="form-select form-select-sm" id="timePeriodFilter">
+                            <option value="">All Time</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="last90">Last 90 Days</option>
+                            <option value="last180">Last 180 Days</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" id="applyFiltersBtn">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="col-lg-9">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var order in Model)
+                {
+                    <div class="order-card card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center" 
+                             data-bs-toggle="collapse" data-bs-target="#orderDetails_@order.OrderID">
+                            <div class="d-flex align-items-center gap-3">
+                                <h6 class="mb-1">Order #@order.OrderID.ToString()</h6>
+                                @if (order.OrderStatus != "Cancelled" && order.OrderStatus != "Delivered" && order.OrderStatus != "Shipped")
+                                {
+                                    <button class="btn btn-primary btn-sm me-2" onclick="event.stopPropagation(); trackOrder(@order.OrderID)">
+                                        <i class="fas fa-truck me-1"></i>Track Order
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); showCancelModal(@order.OrderID)">
+                                        <i class="fas fa-times me-1"></i>Cancel Order
+                                    </button>
+                                }
+                            </div>
+                            <div class="text-end">
+                                @{
+                                    string statusClass = order.OrderStatus?.ToLower() switch
+                                    {
+                                        "pending" => "pending",
+                                        "processing" => "processing",
+                                        "shipped" => "shipped",
+                                        "delivered" => "delivered",
+                                        "cancelled" => "cancelled",
+                                        _ => order.OrderStatus?.ToLower() ?? "pending"
+                                    };
+                                }
+                                <span class="status-badge @statusClass">@order.OrderStatus</span>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="order-preview flex-grow-1">
+                                    @{
+                                        var displayedItems = order.OrderItems?.Take(2).ToList();
+                                        int totalItemsCount = order.OrderItems?.Sum(oi => oi.Quantity) ?? 0;
+                                    }
+                                    <div class="d-flex align-items-center">
+                                        @if (displayedItems != null)
+                                        {
+                                            foreach (var item in displayedItems)
+                                            {
+                                                <img src="@item.Book?.CoverImageURL" alt="@item.Book?.Title" 
+                                                     class="rounded shadow-sm me-2" 
+                                                     style="width: 45px; height: 65px; object-fit: cover;">
+                                            }
+                                        }
+                                        @if (order.OrderItems != null && order.OrderItems.Count > 2)
+                                        {
+                                            <span class="badge bg-secondary ms-2">+@(order.OrderItems.Count - 2) more</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="order-total text-end">
+                                    <h6 class="mb-1">₹@order.TotalAmount.ToString("F2")</h6>
+                                    <small class="text-muted">@totalItemsCount items</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="collapse" id="orderDetails_@order.OrderID">
+                            <hr class="my-0">
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Order Items -->
+                                    <div class="col-md-6 mb-4 mb-md-0">
+                                        <h6 class="mb-3 text-muted">Order Items</h6>
+                                        <div class="order-items">
+                                            @if (order.OrderItems != null && order.OrderItems.Any())
+                                            {
+                                                foreach (var item in order.OrderItems)
+                                                {
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <img src="@item.Book?.CoverImageURL" alt="@item.Book?.Title" 
+                                                             class="rounded shadow-sm" 
+                                                             style="width: 50px; height: 70px; object-fit: cover;">
+                                                        <div class="ms-3">
+                                                            <h6 class="mb-0">@item.Book?.Title</h6>
+                                                            <small class="text-muted">
+                                                                Qty: @item.Quantity × ₹@item.Price.ToString("F2")
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Order Timeline -->
+                                    <div class="col-md-6">
+                                        <h6 class="mb-3 text-muted">Order Timeline</h6>
+                                        <div class="tracking-info">
+                                            <div class="tracking-step @(order.OrderStatus == "Cancelled" ? "cancelled" : "completed")">
+                                                <h6 class="mb-1">Order Confirmed</h6>
+                                                <small class="text-muted">@order.OrderDate.ToString("MMM dd, yyyy hh:mm tt")</small>
+                                            </div>
+
+                                            @if (order.OrderStatus != "Cancelled")
+                                            {
+                                                <div class="tracking-step @(order.OrderStatus == "Processing" || order.OrderStatus == "Shipped" || order.OrderStatus == "Delivered" ? "completed" : "")">
+                                                    <h6 class="mb-1">Processing</h6>
+                                                    <small class="text-muted">Expected: @order.OrderDate.AddDays(1).ToString("MMM dd, yyyy")</small>
+                                                </div>
+                                                <div class="tracking-step @(order.OrderStatus == "Shipped" || order.OrderStatus == "Delivered" ? "completed" : "")">
+                                                    <h6 class="mb-1">Shipped</h6>
+                                                    <small class="text-muted">Expected: @order.OrderDate.AddDays(2).ToString("MMM dd, yyyy")</small>
+                                                </div>
+                                                <div class="tracking-step @(order.OrderStatus == "Delivered" ? "completed" : "")">
+                                                    <h6 class="mb-1">Delivery</h6>
+                                                    <small class="text-muted">Expected: @order.OrderDate.AddDays(3).ToString("MMM dd, yyyy")</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info text-center p-5" role="alert">
+                    <i class="fas fa-box-open fa-3x mb-3"></i>
+                    <h5>No Orders Yet</h5>
+                    <p class="mb-0">You haven't placed any orders yet. Start shopping now!</p>
+                    <a href="@Url.Action("UserHome", "User")" class="btn btn-primary mt-3">
+                        <i class="fas fa-shopping-cart me-2"></i>Browse Books
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelOrderModalLabel"><i class="fas fa-exclamation-triangle me-2"></i>Cancel Order</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                <h5>Are you sure you want to cancel this order?</h5>
+                <p class="mb-0">If you proceed, the order amount will be refunded to your original payment method.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">No, Keep Order</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Refund Message Modal -->
+<div class="modal fade" id="refundMessageModal" tabindex="-1" aria-labelledby="refundMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="refundMessageModalLabel"><i class="fas fa-undo-alt me-2"></i>Order Cancelled</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-rupee-sign fa-3x text-success mb-3"></i>
+                <h5>Your order has been cancelled.</h5>
+                <p class="mb-0">The order amount will be refunded to your original payment method within 3-5 business days.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .filter-card {
+            position: sticky;
+            top: 80px;
+        }
+
+        .order-card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .order-card .card-header {
+            cursor: pointer;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-badge.shipped {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.delivered {
+            background-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .status-badge.cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .tracking-info {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .tracking-info::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+
+        .tracking-step {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .tracking-step::before {
+            content: "";
+            position: absolute;
+            left: -1.5rem;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #adb5bd;
+        }
+
+        .tracking-step.completed::before {
+            content: "\f00c";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            background: #28a745;
+            border-color: #28a745;
+            color: #fff;
+            font-size: 8px;
+            text-align: center;
+            line-height: 12px;
+        }
+
+        .tracking-step.cancelled::before {
+            content: "\f00d";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            background: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+            font-size: 8px;
+            text-align: center;
+            line-height: 12px;
+        }
+
+        .card, .order-card {
+            border-radius: 1.25rem;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s cubic-bezier(.4,0,.2,1), transform 0.2s cubic-bezier(.4,0,.2,1);
+            background: #fff;
+            border: 1px solid #e5e5e5;
+        }
+        .card:hover, .order-card:hover {
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.16);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .btn, .btn-primary, .btn-outline-primary {
+            border-radius: 1.5rem !important;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+        }
+        .btn-primary {
+            background: #111;
+            color: #fff;
+            border: none;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background: #222;
+            color: #fff;
+        }
+        .btn-outline-primary {
+            color: #111;
+            border: 2px solid #111;
+            background: #fff;
+        }
+        .btn-outline-primary:hover, .btn-outline-primary:focus {
+            background: #111;
+            color: #fff;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const timePeriodFilter = document.getElementById('timePeriodFilter');
+            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+
+            // Set initial selected values based on ViewBag
+            const selectedStatus = '@(ViewBag.SelectedStatusFilter ?? string.Empty)';
+            const selectedTimePeriod = '@(ViewBag.SelectedTimePeriodFilter ?? string.Empty)';
+
+            if (selectedStatus) {
+                statusFilter.value = selectedStatus;
+            }
+            if (selectedTimePeriod) {
+                timePeriodFilter.value = selectedTimePeriod;
+            }
+
+            applyFiltersBtn.addEventListener('click', function() {
+                const status = statusFilter.value;
+                const timePeriod = timePeriodFilter.value;
+
+                let queryString = [];
+                if (status) {
+                    queryString.push(`statusFilter=${encodeURIComponent(status)}`);
+                }
+                if (timePeriod) {
+                    queryString.push(`timePeriodFilter=${encodeURIComponent(timePeriod)}`);
+                }
+
+                const baseUrl = '@Url.Action("UserOrder", "User")';
+                const newUrl = baseUrl + (queryString.length > 0 ? `?${queryString.join('&')}` : '');
+                window.location.href = newUrl;
+            });
+        });
+
+        function trackOrder(orderId) {
+            // No-op or implement tracking if needed
+        }
+
+        let cancelOrderId = null;
+        function showCancelModal(orderId) {
+            cancelOrderId = orderId;
+            const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+            modal.show();
+        }
+        document.getElementById('confirmCancelBtn').onclick = function() {
+            if (!cancelOrderId) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/User/CancelOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ orderId: cancelOrderId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const refundModal = new bootstrap.Modal(document.getElementById('refundMessageModal'));
+                    refundModal.show();
+                } else {
+                    alert(data.message || 'Failed to cancel order');
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling order:', error);
+                alert('An error occurred while cancelling the order');
+            });
+            // Hide the cancel modal
+            const cancelModal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+            cancelModal.hide();
+        };
+    </script>
+}

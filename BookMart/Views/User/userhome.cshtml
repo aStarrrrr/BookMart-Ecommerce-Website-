@@ -1,0 +1,499 @@
+﻿@model BookMart.Models.HomeViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "BookMart - Your Online Bookstore";
+    Layout = "userCommonLayout";
+}
+
+<link href="~/css/user.css" rel="stylesheet" />
+
+<style>
+    .book-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .book-card .card-img-top {
+        height: 300px;
+        object-fit: contain;
+        background: #f8f9fa;
+        padding: 1rem;
+    }
+
+    .book-card .card-body {
+        padding: 1rem;
+    }
+
+    .book-card .card-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .book-card .card-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .book-card .btn {
+        border-radius: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .book-card .btn-primary {
+        background-color: #000;
+        border-color: #000;
+    }
+
+    .book-card .btn-outline-primary {
+        color: #000;
+        border-color: #000;
+    }
+
+    .book-card .btn-primary:hover,
+    .book-card .btn-outline-primary:hover {
+        background-color: #333;
+        border-color: #333;
+        color: #fff;
+    }
+
+    .toast {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1050;
+    }
+
+    /* Login Modal Styles */
+    .login-modal .modal-content {
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .login-modal .modal-header {
+        background: #000;
+        color: #fff;
+        border: none;
+        padding: 1.5rem;
+    }
+
+    .login-modal .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .login-modal .modal-body {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .login-modal .modal-body p {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .login-modal .modal-footer {
+        border: none;
+        padding: 1.5rem;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .login-modal .btn {
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        min-width: 120px;
+    }
+
+    .login-modal .btn-primary {
+        background: #000;
+        border-color: #000;
+    }
+
+    .login-modal .btn-outline-primary {
+        color: #000;
+        border-color: #000;
+    }
+
+    .login-modal .btn-primary:hover {
+        background: #333;
+        border-color: #333;
+    }
+
+    .login-modal .btn-outline-primary:hover {
+        background: #f8f9fa;
+        color: #000;
+    }
+
+    .login-modal .modal-icon {
+        font-size: 3rem;
+        color: #000;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<!-- Toast Container for notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="bookAddedToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Hero Banner -->
+<section class="hero-banner py-5">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-3 fw-bold mb-4">Welcome to BookMart</h1>
+                <p class="lead mb-4">Discover your next favorite book from our vast collection of titles. From timeless classics to contemporary bestsellers, we have something for every reader.</p>
+                <div class="d-flex gap-3">
+                    <a href="#featured-books" class="btn btn-primary btn-lg">Explore Books</a>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-outline-primary btn-lg">Join Now</a>
+                </div>
+                <div class="mt-4">
+                    <div class="d-flex align-items-center gap-4">
+                        <div>
+                            <h4 class="mb-0">10k+</h4>
+                            <small class="text-muted">Books Available</small>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">5k+</h4>
+                            <small class="text-muted">Happy Readers</small>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">500+</h4>
+                            <small class="text-muted">Authors</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search Results Section -->
+@if (Model.IsFiltered)
+{
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                        {
+                            <span>Search Results for "@Model.SearchQuery"</span>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.GenreName))
+                        {
+                            <span>@Model.GenreName Books</span>
+                        }
+                    </h2>
+                    <p class="text-muted mb-0">Found @Model.TotalBooks result(s)</p>
+                </div>
+                <a href="@Url.Action("UserHome", "User")" class="btn btn-outline-primary">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </a>
+            </div>
+            <div class="row g-4">
+                @if (Model.SearchResults?.Any() == true)
+                {
+                    @foreach (var book in Model.SearchResults)
+                    {
+                        <div class="col-6 col-md-3">
+                            <a href="@Url.Action("UserViewBookDetails", "User", new { id = book.BookID })" class="text-decoration-none">
+                                <div class="book-card card h-100 shadow-sm hover-effect">
+                                    <div class="position-relative book-image-container">
+                                        <img src="@book.CoverImageURL" class="card-img-top" alt="@book.Title" style="width: 100%; height: 100%; object-fit: contain; background-color: #f8f9fa;">
+                                        @if (book.DiscountedPrice.HasValue)
+                                        {
+                                            var discountPercentage = (int)(((book.Price - book.DiscountedPrice.Value) / book.Price) * 100);
+                                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">@discountPercentage% OFF</span>
+                                        }
+                                    </div>
+                                    <div class="card-body d-flex flex-column p-3">
+                                        <h6 class="card-title text-dark mb-1 text-truncate">@book.Title</h6>
+                                        <p class="card-text text-muted small mb-2">@book.Author</p>
+                                        <div class="mt-auto">
+                                            <div class="d-flex align-items-center mb-2">
+                                                @if (book.DiscountedPrice.HasValue)
+                                                {
+                                                    <span class="text-decoration-line-through text-muted me-2 small">₹@book.Price.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                    <span class="text-primary fw-bold">₹@book.DiscountedPrice.Value.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-primary fw-bold">₹@book.Price.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                }
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <span class="btn btn-outline-primary btn-sm flex-grow-1">View Details</span>
+                                                <button onclick="addToCart(event, @book.BookID, '@book.Title')" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h3>No Results Found</h3>
+                            <p class="text-muted">Try adjusting your search criteria or browse our categories.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (!Model.IsFiltered)
+{
+    <!-- Welcome Offers Section -->
+    <section id="featured-books" class="py-5">
+        <div class="container">
+            <h2 class="mb-4">Welcome Offers</h2>
+            <div class="row g-4">
+                @if (Model.FeaturedBooks?.Any() == true)
+                {
+                    @foreach (var book in Model.FeaturedBooks)
+                    {
+                        <div class="col-6 col-md-3">
+                            <a href="@Url.Action("UserViewBookDetails", "User", new { id = book.BookID })" class="text-decoration-none">
+                                <div class="book-card card h-100 shadow-sm hover-effect">
+                                    <div class="position-relative book-image-container">
+                                        <img src="@book.CoverImageURL" class="card-img-top" alt="@book.Title">
+                                        @if (book.DiscountedPrice.HasValue)
+                                        {
+                                            var discountPercentage = (int)(((book.Price - book.DiscountedPrice.Value) / book.Price) * 100);
+                                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">@discountPercentage% OFF</span>
+                                        }
+                                    </div>
+                                    <div class="card-body d-flex flex-column p-3">
+                                        <h6 class="card-title text-dark mb-1">@book.Title</h6>
+                                        <p class="card-text text-muted small mb-2">@book.Author</p>
+                                        <div class="mt-auto">
+                                            <div class="d-flex align-items-center mb-2">
+                                                @if (book.DiscountedPrice.HasValue)
+                                                {
+                                                    <span class="text-decoration-line-through text-muted me-2 small">₹@book.Price.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                    <span class="text-primary fw-bold">₹@book.DiscountedPrice.Value.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-primary fw-bold">₹@book.Price.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                }
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <span class="btn btn-outline-primary btn-sm flex-grow-1">View Details</span>
+                                                <button onclick="addToCart(event, @book.BookID, '@book.Title')" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Explore Books Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="mb-4">Explore Books</h2>
+            <div class="row g-4" id="exploreBooks">
+                @if (Model.Books?.Any() == true)
+                {
+                    @foreach (var book in Model.Books)
+                    {
+                        <div class="col-6 col-md-3">
+                            <a href="@Url.Action("UserViewBookDetails", "User", new { id = book.BookID })" class="text-decoration-none">
+                                <div class="book-card card h-100 shadow-sm hover-effect">
+                                    <div class="position-relative book-image-container">
+                                        <img src="@book.CoverImageURL" class="card-img-top" alt="@book.Title">
+                                        @if (book.DiscountedPrice.HasValue)
+                                        {
+                                            var discountPercentage = (int)(((book.Price - book.DiscountedPrice.Value) / book.Price) * 100);
+                                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">@discountPercentage% OFF</span>
+                                        }
+                                    </div>
+                                    <div class="card-body d-flex flex-column p-3">
+                                        <h6 class="card-title text-dark mb-1 text-truncate">@book.Title</h6>
+                                        <p class="card-text text-muted small mb-2">@book.Author</p>
+                                        <div class="mt-auto">
+                                            <div class="d-flex align-items-center mb-2">
+                                                @if (book.DiscountedPrice.HasValue)
+                                                {
+                                                    <span class="text-decoration-line-through text-muted me-2 small">₹@book.Price.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                    <span class="text-primary fw-bold">₹@book.DiscountedPrice.Value.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-primary fw-bold">₹@book.Price.ToString("F0", CultureInfo.InvariantCulture)</span>
+                                                }
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <span class="btn btn-outline-primary btn-sm flex-grow-1">View Details</span>
+                                                <button onclick="addToCart(event, @book.BookID, '@book.Title')" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Authors Section -->
+    <section class="py-5 popular-authors">
+        <div class="container">
+            <h2 class="mb-4">Popular Authors</h2>
+            <div class="row g-4">
+                @if (Model.PopularAuthors?.Any() == true)
+                {
+                    @foreach (var author in Model.PopularAuthors)
+                    {
+                        <div class="col-6 col-md-3">
+                            <div class="card author-card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">@author.AuthorName</h5>
+                                    <p class="text-muted">@author.Genre</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Login Modal -->
+<div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">
+                    <i class="fas fa-lock me-2"></i>Login Required
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h4 class="mb-3">Add to Cart</h4>
+                <p>Please login or create an account to add items to your cart and enjoy a personalized shopping experience.</p>
+                <div class="benefits mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Track your orders</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Save your favorite books</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Get exclusive offers</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-outline-primary">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addToCart(event, bookId, title) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <text>
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+                return;
+                </text>
+            }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            $.ajax({
+                url: '@Url.Action("AddToCart", "User")',
+                type: 'POST',
+                data: { bookId: bookId },
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const toast = new bootstrap.Toast(document.getElementById('bookAddedToast'));
+                        document.getElementById('toastMessage').textContent = response.message;
+                        toast.show();
+                    } else {
+                        alert(response.message || 'Failed to add book to cart');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while adding the book to cart');
+                }
+            });
+        }
+
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function () {
+            const successMessage = '@TempData["SuccessMessage"]';
+            if (successMessage && successMessage !== '') {
+                const toast = new bootstrap.Toast(document.getElementById('bookAddedToast'));
+                document.getElementById('toastMessage').textContent = successMessage;
+                toast.show();
+            }
+        });
+    </script>
+    @Html.AntiForgeryToken()
+}

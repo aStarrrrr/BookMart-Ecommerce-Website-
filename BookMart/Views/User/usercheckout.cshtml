@@ -1,0 +1,223 @@
+﻿@model BookMart.Models.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "userCommonLayout";
+}
+
+<link href="~/css/user.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+
+<div class="container mt-5 pt-5">
+    <!-- Back to Cart Button (top) -->
+    <div class="mb-3">
+        <a href="@Url.Action("UserCart", "User")" class="btn btn-outline">
+            <i class="fas fa-arrow-left me-2"></i>Back to Cart
+        </a>
+    </div>
+    <!-- Checkout Steps -->
+    <div class="checkout-steps mb-5">
+        <div class="step active">1</div>
+        <div class="step active">2</div>
+        <div class="step">3</div>
+        <div class="step">4</div>
+    </div>
+
+    <div class="row">
+        <!-- Checkout Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Shipping Address
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @* Form to submit shipping address and proceed to payment *@
+                    <form asp-controller="User" asp-action="ProcessCheckout" method="post" id="checkoutForm">
+                        @Html.AntiForgeryToken() @* Anti-forgery token for security *@
+                        <input type="hidden" name="CouponCode" id="hiddenCouponCode" value="" />
+                        <input type="hidden" name="CouponDiscount" id="hiddenCouponDiscount" value="0" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="ShippingFirstName" class="form-label"></label>
+                                <input asp-for="ShippingFirstName" type="text" class="form-control" required>
+                                <span asp-validation-for="ShippingFirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ShippingLastName" class="form-label"></label>
+                                <input asp-for="ShippingLastName" type="text" class="form-control" required>
+                                <span asp-validation-for="ShippingLastName" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="ShippingAddressLine1" class="form-label"></label>
+                                <input asp-for="ShippingAddressLine1" type="text" class="form-control" placeholder="Street address" required>
+                                <span asp-validation-for="ShippingAddressLine1" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="ShippingAddressLine2" class="form-label"></label>
+                                <input asp-for="ShippingAddressLine2" type="text" class="form-control" placeholder="Apartment, suite, etc. (optional)">
+                                <span asp-validation-for="ShippingAddressLine2" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-5">
+                                <label asp-for="ShippingCity" class="form-label"></label>
+                                <input asp-for="ShippingCity" type="text" class="form-control" required>
+                                <span asp-validation-for="ShippingCity" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="ShippingState" class="form-label"></label>
+                                <select asp-for="ShippingState" class="form-select" required>
+                                    <option value="">Choose...</option>
+                                    <option>Kerala</option>
+                                    <option>Tamil Nadu</option>
+                                    <option>Karnataka</option>
+                                    <option>Maharashtra</option>
+                                    <option>Delhi</option>
+                                    <option>Uttar Pradesh</option>
+                                    @* Add more states as needed *@
+                                </select>
+                                <span asp-validation-for="ShippingState" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="ShippingPinCode" class="form-label"></label>
+                                <input asp-for="ShippingPinCode" type="text" class="form-control" required>
+                                <span asp-validation-for="ShippingPinCode" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="ShippingPhone" class="form-label"></label>
+                                <input asp-for="ShippingPhone" type="tel" class="form-control" required>
+                                <span asp-validation-for="ShippingPhone" class="class=" text-danger""></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="ShippingEmail" class="form-label"></label>
+                                <input asp-for="ShippingEmail" type="email" class="form-control" required>
+                                <span asp-validation-for="ShippingEmail" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input asp-for="SaveAddressForFuture" type="checkbox" class="form-check-input" id="saveAddress">
+                                    <label class="form-check-label" for="saveAddress">
+                                        Save this address for future orders
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Navigation Buttons (inside the form to submit it) -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="@Url.Action("UserCart", "User")" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Cart
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                @* Changed to type="submit" *@
+                                Continue to Payment<i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Order Items (Dynamic) -->
+                    <div class="order-items">
+                        @if (Model.CartItems != null && Model.CartItems.Any())
+                        {
+                            @foreach (var item in Model.CartItems)
+                            {
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="@item.Book?.CoverImageURL" alt="@item.Book?.Title" class="rounded" style="width: 50px; height: 70px; object-fit: cover;">
+                                    <div class="ms-3">
+                                        <h6 class="mb-0">@item.Book?.Title</h6>
+                                        <small class="text-muted">Qty: @item.Quantity</small>
+                                    </div>
+                                    <span class="ms-auto">₹@((item.Quantity * item.Price).ToString("N0"))</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center">No items in cart.</p>
+                        }
+                    </div>
+
+                    <!-- Coupon Code (only in order summary) -->
+                    <div class="mb-3">
+                        <label for="couponCode" class="form-label">Have a coupon?</label>
+                        <div class="input-group">
+                            <input type="text" id="couponCode" class="form-control" placeholder="Enter coupon code (e.g., COGNIZANT)">
+                            <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">Apply</button>
+                        </div>
+                        <div id="couponMessage" class="text-success small mt-1"></div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Cost Breakdown (Dynamic) -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span id="subtotal">₹@Math.Ceiling(Model.SubTotal).ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping</span>
+                        <span class="text-success">₹@Math.Ceiling(Model.ShippingCost).ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax</span>
+                        <span id="taxAmount">₹@Math.Ceiling(Model.TaxAmount).ToString("N0")</span>
+                    </div>
+                    <div id="discountRow" class="d-flex justify-content-between mb-2" style="display:none;">
+                        <span>Coupon Discount (COGNIZANT -10%)</span>
+                        <span id="discountAmount" class="text-success">-₹0</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total</strong>
+                        <strong class="h4" id="totalAmount">₹@Math.Ceiling(Model.TotalAmount).ToString("N0")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" /> @* Include client-side validation scripts *@
+    <script>
+        let subtotal = @Math.Ceiling(Model.SubTotal);
+        let shipping = @Math.Ceiling(Model.ShippingCost);
+        let tax = @Math.Ceiling(Model.TaxAmount);
+        let originalTotal = subtotal + shipping + tax;
+        function applyCoupon() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const discountRow = document.getElementById('discountRow');
+            const discountAmount = document.getElementById('discountAmount');
+            const totalAmount = document.getElementById('totalAmount');
+            const couponMessage = document.getElementById('couponMessage');
+            const hiddenCouponCode = document.getElementById('hiddenCouponCode');
+            const hiddenCouponDiscount = document.getElementById('hiddenCouponDiscount');
+            if (code === 'COGNIZANT') {
+                const discount = Math.round(subtotal * 0.10);
+                discountRow.style.display = '';
+                discountAmount.textContent = '-₹' + discount;
+                totalAmount.textContent = '₹' + (originalTotal - discount);
+                couponMessage.textContent = 'COGNIZANT coupon applied! 10% off your order.';
+                hiddenCouponCode.value = code;
+                hiddenCouponDiscount.value = discount;
+            } else {
+                discountRow.style.display = 'none';
+                discountAmount.textContent = '-₹0';
+                totalAmount.textContent = '₹' + originalTotal;
+                couponMessage.textContent = code ? 'Invalid coupon code.' : '';
+                hiddenCouponCode.value = '';
+                hiddenCouponDiscount.value = 0;
+            }
+        }
+    </script>
+}

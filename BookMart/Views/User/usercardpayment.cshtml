@@ -1,0 +1,297 @@
+﻿@model BookMart.Models.CheckoutViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Card Payment";
+    Layout = "userCommonLayout";
+}
+
+<link href="~/css/user.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<div class="container mt-5 pt-5">
+    <!-- Checkout Steps -->
+    <div class="checkout-steps mb-5">
+        <div class="step active">1</div>
+        <div class="step active">2</div>
+        <div class="step active">3</div>
+        <div class="step">4</div>
+    </div>
+
+    <div class="row">
+        <!-- Card Payment Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-credit-card me-2"></i>Card Payment
+                        </h4>
+                        <span class="secure-badge">
+                            <i class="fas fa-lock"></i>Secure Payment
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="User" asp-action="ProcessPayment" method="post" id="cardPaymentForm">
+                        @Html.AntiForgeryToken()
+
+                        @* Hidden fields to pass ALL CheckoutViewModel properties back to ProcessPayment *@
+                        <input type="hidden" asp-for="SubTotal" />
+                        <input type="hidden" asp-for="ShippingCost" />
+                        <input type="hidden" asp-for="TaxAmount" />
+                        <input type="hidden" asp-for="TotalAmount" />
+                        <input type="hidden" asp-for="ShippingFirstName" />
+                        <input type="hidden" asp-for="ShippingLastName" />
+                        <input type="hidden" asp-for="ShippingAddressLine1" />
+                        <input type="hidden" asp-for="ShippingAddressLine2" />
+                        <input type="hidden" asp-for="ShippingCity" />
+                        <input type="hidden" asp-for="ShippingState" />
+                        <input type="hidden" asp-for="ShippingPinCode" />
+                        <input type="hidden" asp-for="ShippingPhone" />
+                        <input type="hidden" asp-for="ShippingEmail" />
+                        <input type="hidden" asp-for="SaveAddressForFuture" />
+                        <input type="hidden" name="paymentMethod" value="Card" /> @* Explicitly set payment method *@
+                        <input type="hidden" asp-for="CouponCode" />
+                        <input type="hidden" asp-for="CouponDiscount" />
+
+                        @* Hidden fields for CartItems (for OrderItem creation on server) *@
+                        @for (int i = 0; i < Model.CartItems.Count; i++)
+                        {
+                            <input type="hidden" name="CartItems[@i].BookID" value="@Model.CartItems[i].BookID" />
+                            <input type="hidden" name="CartItems[@i].Quantity" value="@Model.CartItems[i].Quantity" />
+                            <input type="hidden" name="CartItems[@i].Price" value="@Model.CartItems[i].Price" />
+                        }
+
+                        <!-- Card Number -->
+                        <div class="mb-4">
+                            <label for="cardNumber" class="form-label">Card Number</label>
+                            <div class="position-relative">
+                                <input type="text" class="form-control card-input"
+                                       id="cardNumber"
+                                       maxlength="19"
+                                       placeholder="1234 5678 9012 3456"
+                                       required>
+                                <i class="fas fa-credit-card card-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <!-- Expiry Date -->
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="expiryDate" class="form-label">Expiry Date</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control card-input"
+                                           id="expiryDate"
+                                           maxlength="5"
+                                           placeholder="MM/YY"
+                                           required>
+                                    <i class="fas fa-calendar card-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- CVV -->
+                            <div class="col-md-6">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <div class="position-relative">
+                                    <input type="password" class="form-control card-input"
+                                           id="cvv"
+                                           maxlength="4"
+                                           placeholder="***"
+                                           required>
+                                    <i class="fas fa-lock card-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Holder Name -->
+                        <div class="mb-4">
+                            <label for="cardHolderName" class="form-label">Card Holder Name</label>
+                            <div class="position-relative">
+                                <input type="text" class="form-control card-input"
+                                       id="cardHolderName"
+                                       placeholder="Name as on card"
+                                       required>
+                                <i class="fas fa-user card-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- Save Card Checkbox -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="saveCard">
+                                <label class="form-check-label" for="saveCard">
+                                    Save card for future payments
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            Pay ₹@Model.TotalAmount.ToString("F2", CultureInfo.InvariantCulture)<i class="fas fa-lock ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons with consistent styling -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="@Url.Action("UserPaymentSelection", "User")" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Change Payment Method
+                </a>
+                <button type="submit" form="cardPaymentForm" class="btn btn-primary">
+                    Confirm Payment<i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Delivery Address (from CheckoutViewModel) -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Delivery Address</h5>
+                        <p class="mb-1">@Model.ShippingFirstName @Model.ShippingLastName</p>
+                        <p class="mb-1">@Model.ShippingAddressLine1</p>
+                        @if (!string.IsNullOrWhiteSpace(Model.ShippingAddressLine2))
+                        {
+                            <p class="mb-1">@Model.ShippingAddressLine2</p>
+                        }
+                        <p class="mb-0">@Model.ShippingCity, @Model.ShippingState @Model.ShippingPinCode</p>
+                    </div>
+
+                    <hr>
+
+                    <!-- Order Items -->
+                    <div class="order-items mb-4">
+                        @if (Model.CartItems != null && Model.CartItems.Any())
+                        {
+                            var idx = 1;
+                            foreach (var item in Model.CartItems)
+                            {
+                                var formattedPrice = (item.Quantity * item.Price).ToString("F2", CultureInfo.InvariantCulture);
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="me-2 text-muted">@idx.</span>
+                                    <img src="@item.Book?.CoverImageURL" alt="@item.Book?.Title" class="rounded" style="width: 50px; height: 70px; object-fit: cover;">
+                                    <div class="ms-3">
+                                        <h6 class="mb-0">@item.Book?.Title</h6>
+                                        <small class="text-muted">Qty: @item.Quantity</small>
+                                    </div>
+                                    <span class="ms-auto">₹@formattedPrice</span>
+                                </div>
+                                idx++;
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center">No items found for this order.</p>
+                        }
+                    </div>
+
+                    <!-- Cost Breakdown -->
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <span>₹@Model.SubTotal.ToString("F2", CultureInfo.InvariantCulture)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping</span>
+                            <span class="text-success">₹@Model.ShippingCost.ToString("F2", CultureInfo.InvariantCulture)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax</span>
+                            <span>₹@Math.Ceiling(Model.TaxAmount).ToString("N0")</span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Model.CouponCode) && Model.CouponDiscount > 0)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Coupon Discount (COGNIZANT -10%)</span>
+                                <span class="text-success">-₹@Model.CouponDiscount.ToString("N0")</span>
+                            </div>
+                        }
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total</strong>
+                            <strong class="h4">₹@Math.Ceiling(Model.TotalAmount).ToString("N0")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* Card payment specific styles */
+        .card-input {
+            padding-right: 2.5rem;
+            border: 2px solid var(--color-gray-200);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .card-input:focus {
+            border-color: var(--color-black);
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-gray-400);
+            transition: color 0.3s ease;
+        }
+
+        .card-input:focus + .card-icon {
+            color: var(--color-black);
+        }
+
+        .secure-badge {
+            font-size: 0.875rem;
+            color: var(--color-black);
+            background: var(--color-gray-100);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--color-black);
+            border-color: var(--color-black);
+        }
+    </style>
+    <script>
+        // Client-side validation/formatting for card number, expiry, CVV
+        document.addEventListener('DOMContentLoaded', function () {
+            const cardNumberInput = document.getElementById('cardNumber');
+            const expiryDateInput = document.getElementById('expiryDate');
+
+            // Format card number with spaces
+            cardNumberInput.addEventListener('input', function (e) {
+                const target = e.target;
+                let value = target.value.replace(/\D/g, ''); // Remove non-digits
+                value = value.replace(/(\d{4})(?=\d)/g, '$1 '); // Add space every 4 digits
+                target.value = value;
+            });
+
+            // Format expiry date as MM/YY
+            expiryDateInput.addEventListener('input', function (e) {
+                const target = e.target;
+                let value = target.value.replace(/\D/g, ''); // Remove non-digits
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                target.value = value;
+            });
+        });
+    </script>
+}
