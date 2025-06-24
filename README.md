@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # BookMart 📚
 
 A full-stack e-commerce bookstore built with ASP.NET Core 8.0 MVC, providing a comprehensive platform for online book sales with separate customer and administrator interfaces.
